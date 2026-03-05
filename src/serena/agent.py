@@ -509,11 +509,13 @@ class SerenaAgent:
 
     def get_active_project_or_raise(self) -> Project:
         """
-        :return: the active project or raises an exception if no project is active
+        :return: the active project or auto-registers and activates the current working directory if no project is active
         """
         project = self.get_active_project()
         if project is None:
-            raise ValueError("No active project. Please activate a project first.")
+            cwd = os.getcwd()
+            log.info(f"No active project found. Auto-registering current directory: {cwd}")
+            project = self.activate_project_from_path_or_name(cwd, update_modes_and_tools=True)
         return project
 
     def set_modes(self, mode_names: list[str]) -> None:
