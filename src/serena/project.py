@@ -32,13 +32,13 @@ class MemoriesManager:
     GLOBAL_TOPIC = "global"
     _global_memory_dir = SerenaPaths().global_memories_path
 
-    def __init__(self, serena_data_folder: str | Path, read_only_memory_patterns: Sequence[str] = ()):
+    def __init__(self, serena_data_folder: str | Path | None, read_only_memory_patterns: Sequence[str] = ()):
         """
         :param serena_data_folder: the absolute path to the project's .serena data folder
         :param read_only_memory_patterns: whether to allow writing global memories in tool execution contexts
         """
         self._project_memory_dir: Path | None = None
-        if project_root is not None:
+        if serena_data_folder is not None:
             self._project_memory_dir = Path(serena_data_folder) / "memories"
             self._project_memory_dir.mkdir(parents=True, exist_ok=True)
         self._encoding = SERENA_FILE_ENCODING

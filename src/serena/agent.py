@@ -604,7 +604,7 @@ class SerenaAgent:
         available_tools = self._active_tools
         available_markers = available_tools.tool_marker_names
         global_memory_names = MemoriesManager(
-            project_root=None, read_only_memory_patterns=self.serena_config.read_only_memory_patterns
+            serena_data_folder=None, read_only_memory_patterns=self.serena_config.read_only_memory_patterns
         ).list_global_memories()
         global_memories_list = list_string(global_memory_names) if global_memory_names else ""
         log.info("Generating system prompt with available_tools=(see active tools), available_markers=%s", available_markers)
