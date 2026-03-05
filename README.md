@@ -67,38 +67,26 @@ making use of an IDE's capabilities would.
 Serena can efficiently find the right context and do the right thing even in very large and
 complex projects!
 
-There are two alternative technologies powering these capabilities:
+Serena provides powerful semantic capabilities through **Language servers** implementing the language server Protocol (LSP).
+The underlying language servers are typically open-source projects or freely available for use.
 
-* **Language servers** implementing the language server Protocol (LSP) — the free/open-source alternative.
-* **The Serena JetBrains Plugin**, which leverages the powerful code analysis and editing
-  capabilities of your JetBrains IDE.
+## serena-vanguard: LSP-First Fork with Enhanced Tooling
 
-You can choose either of these backends depending on your preferences and requirements.
+**serena-vanguard** is a curated fork of Serena focused on LSP as the primary backend with additional utilities:
 
-### Language Servers
+- **LSP-only architecture** — cleaner, lighter, and easier to maintain
+- **Tree-sitter utilities** — `fuzzy.py` for fuzzy symbol matching and `ValidateSyntaxTool` for syntax validation
+- **Line-level edit tools** — `replace_lines`, `delete_lines`, `insert_at_line` for surgical code edits
+- **Structural search** — `SearchStructuralTool` powered by ast-grep (sg) for pattern-based code discovery
+- **BMAD integration** — all Serena MCP tools exposed to BMAD agents (dev, architect, qa, analysts, etc.)
 
-Serena incorporates a powerful abstraction layer for the integration of language servers
-that implement the language server protocol (LSP).
-The underlying language servers are typically open-source projects (like Serena) or at least freely available for use.
+### Language Support
 
-With Serena's LSP library, we provide **support for over 30 programming languages**, including
+Serena's LSP library provides **support for over 30 programming languages**, including
 AL, Bash, C#, C/C++, Clojure, Dart, Elixir, Elm, Erlang, Fortran, Go, Groovy (partial support), Haskell, Java, Javascript, Julia, Kotlin, Lua, Markdown, MATLAB, Nix, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Scala, Swift, TOML, TypeScript, YAML, and Zig.
 
 > [!IMPORTANT]
-> Some language servers require additional dependencies to be installed; see the [Language Support](https://oraios.github.io/serena/01-about/020_programming-languages.html) page for details.
-
-### The Serena JetBrains Plugin
-
-As an alternative to language servers, the [Serena JetBrains Plugin](https://plugins.jetbrains.com/plugin/28946-serena/)
-leverages the powerful code analysis capabilities of your JetBrains IDE. 
-The plugin naturally supports all programming languages and frameworks that are supported by JetBrains IDEs, 
-including IntelliJ IDEA, PyCharm, Android Studio, WebStorm, PhpStorm, RubyMine, GoLand, CLion, and others.
-Only Rider is not supported.
-
-<a href="https://plugins.jetbrains.com/plugin/28946-serena/"><img src="docs/_static/images/jetbrains-marketplace-button.png"></a>
-
-The plugin offers the most robust and most powerful Serena experience.  
-See our [documentation page](https://oraios.github.io/serena/02-usage/025_jetbrains_plugin.html) for further details and instructions.
+> Some language servers require additional dependencies to be installed.
 
 ## Quick Start
 
