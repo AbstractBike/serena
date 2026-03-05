@@ -2,9 +2,15 @@ import logging
 from typing import Any, Literal
 
 import serena.jetbrains.jetbrains_types as jb
-from serena.jetbrains.jetbrains_plugin_client import JetBrainsPluginClient
+from serena.jetbrains.jetbrains_plugin_client import JetBrainsPluginClient, ServerNotFoundError
 from serena.symbol import JetBrainsSymbolDictGrouper
 from serena.tools import Tool, ToolMarkerOptional, ToolMarkerSymbolicRead
+
+_JETBRAINS_NOT_FOUND_MSG = (
+    "JetBrains IDE service not found for this project. "
+    "Make sure the project is open in a JetBrains IDE with the Serena plugin installed and running, "
+    "or use the LSP-based tools (find_symbol, find_referencing_symbols, get_symbols_overview) instead."
+)
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +67,11 @@ class JetBrainsFindSymbolTool(Tool, ToolMarkerSymbolicRead, ToolMarkerOptional):
         """
         if relative_path == ".":
             relative_path = None
-        with JetBrainsPluginClient.from_project(self.project) as client:
+        try:
+            client_instance = JetBrainsPluginClient.from_project(self.project)
+        except ServerNotFoundError:
+            return _JETBRAINS_NOT_FOUND_MSG
+        with client_instance as client:
             if include_body:
                 include_quick_info = False
                 include_documentation = False
@@ -114,7 +124,11 @@ class JetBrainsFindReferencingSymbolsTool(Tool, ToolMarkerSymbolicRead, ToolMark
             default value from the config will be used.
         :return: a list of JSON objects with the symbols referencing the requested symbol
         """
-        with JetBrainsPluginClient.from_project(self.project) as client:
+        try:
+            client_instance = JetBrainsPluginClient.from_project(self.project)
+        except ServerNotFoundError:
+            return _JETBRAINS_NOT_FOUND_MSG
+        with client_instance as client:
             response_dict = client.find_references(
                 name_path=name_path,
                 relative_path=relative_path,
@@ -155,7 +169,11 @@ class JetBrainsGetSymbolsOverviewTool(Tool, ToolMarkerSymbolicRead, ToolMarkerOp
         :param include_file_documentation: whether to include the file's docstring. Default False.
         :return: a JSON object containing the symbols grouped by kind in a compact format.
         """
-        with JetBrainsPluginClient.from_project(self.project) as client:
+        try:
+            client_instance = JetBrainsPluginClient.from_project(self.project)
+        except ServerNotFoundError:
+            return _JETBRAINS_NOT_FOUND_MSG
+        with client_instance as client:
             symbol_overview = client.get_symbols_overview(
                 relative_path=relative_path, depth=depth, include_file_documentation=include_file_documentation
             )
@@ -229,7 +247,11 @@ class JetBrainsTypeHierarchyTool(Tool, ToolMarkerSymbolicRead, ToolMarkerOptiona
             -1 means the default value from the config will be used.
         :return: Compact JSON with file-grouped hierarchy. Error string if not applicable.
         """
-        with JetBrainsPluginClient.from_project(self.project) as client:
+        try:
+            client_instance = JetBrainsPluginClient.from_project(self.project)
+        except ServerNotFoundError:
+            return _JETBRAINS_NOT_FOUND_MSG
+        with client_instance as client:
             subtypes = None
             supertypes = None
             levels_not_included = {}

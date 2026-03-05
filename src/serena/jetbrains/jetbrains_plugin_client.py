@@ -89,10 +89,13 @@ class JetBrainsPluginClient(ToStringMixin):
         # connect and obtain status
         self._project_root: str | None = None
         self._plugin_version: Version | None = None
+        self._multi_project: bool = False
+        self._requested_project: str | None = None
         try:
             status_response: PluginStatusDTO = cast(jb.PluginStatusDTO, self._make_request("GET", "/status"))
             self._project_root = status_response["project_root"]
             self._plugin_version = Version(status_response["plugin_version"])
+            self._multi_project = bool(status_response.get("multi_project", False))
         except ConnectionError:  # expected if no server is running at the port
             pass
         except Exception as e:
@@ -109,6 +112,19 @@ class JetBrainsPluginClient(ToStringMixin):
     def _tostring_includes(self) -> list[str]:
         return ["_port", "_project_root", "_plugin_version"]
 
+    def _for_project(self, path: Path) -> "JetBrainsPluginClient":
+        """Return a client configured to target a specific project on this multi-project server."""
+        new_client: JetBrainsPluginClient = JetBrainsPluginClient.__new__(JetBrainsPluginClient)
+        new_client._port = self._port
+        new_client._timeout = self._timeout
+        new_client._session = requests.Session()
+        new_client._session.headers.update({"Content-Type": "application/json", "Accept": "application/json"})
+        new_client._project_root = self._project_root
+        new_client._plugin_version = self._plugin_version
+        new_client._multi_project = True
+        new_client._requested_project = str(path)
+        return new_client
+
     @classmethod
     def from_project(cls, project: Project) -> Self:
         resolved_path = Path(project.project_root).resolve()
@@ -117,8 +133,11 @@ class JetBrainsPluginClient(ToStringMixin):
             client = JetBrainsPluginClient(cls._last_port)
             if client.matches(resolved_path):
                 return client
+            if client._multi_project:
+                return client._for_project(resolved_path)  # type: ignore[return-value]
 
         plugin_paths_found = []
+        multi_project_fallback: JetBrainsPluginClient | None = None
         for port in range(cls.BASE_PORT, cls.BASE_PORT + 20):
             client = JetBrainsPluginClient(port)
             if client.matches(resolved_path):
@@ -127,6 +146,13 @@ class JetBrainsPluginClient(ToStringMixin):
                 return client
             elif client._project_root is not None:
                 plugin_paths_found.append(client._project_root)
+                if client._multi_project and multi_project_fallback is None:
+                    multi_project_fallback = client
+                    cls._last_port = port
+
+        if multi_project_fallback is not None:
+            log.info("No dedicated server for %s — using multi-project server at port %d", resolved_path, cls._last_port)
+            return multi_project_fallback._for_project(resolved_path)  # type: ignore[return-value]
 
         log.warning(
             "Searched for Serena JetBrains plugin service for project at %s but found no matching service. "
@@ -204,6 +230,10 @@ class JetBrainsPluginClient(ToStringMixin):
 
     def _make_request(self, method: str, endpoint: str, data: Optional[dict] = None) -> dict[str, Any]:
         url = f"{self._base_url}{endpoint}"
+
+        # In multi-project mode, inject projectPath into every POST request
+        if method.upper() == "POST" and self._requested_project and data is not None:
+            data = {**data, "projectPath": self._requested_project}
 
         response: Response | None = None
         try:
