@@ -61,9 +61,7 @@ class SymbolEngine:
         self._parsers: dict[str, tree_sitter.Parser] = {}
         self._queries: dict[str, tuple[tree_sitter.Language, tree_sitter.Query]] = {}
 
-    def _get_parser_and_query(
-        self, ext: str
-    ) -> tuple[tree_sitter.Parser, tree_sitter.Language, tree_sitter.Query] | None:
+    def _get_parser_and_query(self, ext: str) -> tuple[tree_sitter.Parser, tree_sitter.Language, tree_sitter.Query] | None:
         entry = _LANGUAGE_MAP.get(ext)
         if entry is None:
             return None
@@ -96,16 +94,12 @@ class SymbolEngine:
 
         symbols: list[SymbolBounds] = []
         for match in cursor.matches(tree.root_node):
-            captures = {
-                name: node
-                for name, nodes in match[1].items()
-                for node in (nodes if isinstance(nodes, list) else [nodes])
-            }
+            captures = {name: node for name, nodes in match[1].items() for node in (nodes if isinstance(nodes, list) else [nodes])}
 
             name_node = captures.get("name")
             def_node = captures.get("def", name_node)
 
-            if name_node is not None and def_node is not None:
+            if name_node is not None and def_node is not None and name_node.text is not None:
                 name = name_node.text.decode()
                 kind = _kind_for_node_kind(def_node.type)
                 line = def_node.start_point[0] + 1
