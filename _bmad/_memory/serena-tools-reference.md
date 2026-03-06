@@ -51,6 +51,15 @@ For full parameter details, invoke the tool with no arguments to see its schema.
 |------|---------|------------|
 | `onboarding` | Analyze and document a new project | — |
 
+## Research Tools (web intelligence)
+
+| Tool | Purpose | Key Params |
+|------|---------|------------|
+| `web_scrape` | Scrape a web page for content | `url`, `formats`, `only_main_content` |
+| `web_search` | Search the web by query | `query`, `limit`, `scrape_results` |
+| `web_map` | Discover all URLs on a website | `url`, `search`, `limit` |
+| `web_crawl` | Recursively crawl a website | `url`, `limit`, `max_depth`, `poll_timeout` |
+
 ## Usage Patterns
 
 **Navigate before editing:**
@@ -71,3 +80,9 @@ For full parameter details, invoke the tool with no arguments to see its schema.
 **Impact analysis before refactoring:**
 - `find_referencing_symbols` to find all callers/users
 - `search_for_pattern` for text-based search (comments, strings, config)
+
+**Research before editing:**
+1. `web_search` to find existing solutions or documentation
+2. `web_scrape` to extract detailed content from relevant pages
+3. `web_map` to understand a documentation site structure
+4. `web_crawl` for comprehensive content gathering (keep limit low)

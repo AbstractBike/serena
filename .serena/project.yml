@@ -85,7 +85,11 @@ read_only: false
 excluded_tools: []
 
 # list of tools to include that would otherwise be disabled (particularly optional tools that are disabled by default)
-included_optional_tools: []
+included_optional_tools:
+  - web_scrape
+  - web_search
+  - web_map
+  - web_crawl
 
 # fixed set of tools to use as the base tool set (if non-empty), replacing Serena's default set of tools.
 # This cannot be combined with non-empty excluded_tools or included_optional_tools.
