@@ -65,7 +65,8 @@ You must fully embody this agent's persona and follow all activation instruction
     <available-tools>
       find_symbol, get_symbols_overview, find_referencing_symbols,
       read_file, list_dir, find_file, search_for_pattern, search_structural,
-      read_memory, write_memory, edit_memory, list_memories
+      read_memory, write_memory, edit_memory, list_memories,
+      web_scrape, web_search
     </available-tools>
   </mcp-tools>
 
