@@ -68,6 +68,12 @@ ls_specific_settings: {}
 # These patterns are merged additively with each project's own ignored_paths.
 ignored_paths: []
 
+# whether global memories (the "global" topic) are allowed to be deleted or edited by the agent.
+# Global memories are stored in ~/.serena/memories/global/ and shared across all projects.
+# Set to false to protect global memories from accidental modification by agents.
+# Note: We recommend tracking global memories with git.
+edit_global_memories: True
+
 # timeout, in seconds, after which tool executions are terminated
 tool_timeout: 240
 
@@ -107,6 +113,26 @@ default_max_tool_answer_chars: 150000
 # data files on first run), or ANTHROPIC_CLAUDE_SONNET_4 which will use the (free of cost) Anthropic API to
 # estimate the token count using the Claude Sonnet 4 tokenizer.
 token_count_estimator: CHAR_COUNT
+
+# time budget (seconds) per tool call for the retrieval of additional symbol information
+# such as docstrings or parameter information.
+# (currently only used by LSP-based tools).
+# If the budget is exceeded, Serena stops issuing further retrieval requests
+# and returns partial info results.
+# 0 disables the budget (no early stopping). Negative values are invalid.
+# This is an advanced setting that can help alleviate problems with LSP servers
+# that have a slow implementation of request_hover (clangd is one of those)
+# or with tool calls that find very many symbols.
+# Can be overridden in project.yml.
+symbol_info_budget: 10
+
+# template for the location of the per-project .serena data folder (memories, caches, etc.).
+# Supports the following placeholders:
+#   $projectDir         - the absolute path to the project root directory
+#   $projectFolderName  - the name of the project directory
+# Default: "$projectDir/.serena" (data stored inside the project directory)
+# Example for a central location: "/projects-metadata/$projectFolderName/.serena"
+project_serena_folder_location: "$projectDir/.serena"
 
 # the list of registered project paths (updated automatically).
 projects: []

@@ -1,0 +1,8 @@
+{
+  "name": "serena-vanguard",
+  "version": "0.1.0",
+  "description": "Curated fork of Serena — LSP-powered semantic code agent with 49 MCP tools across 46 language servers. Symbol-level find/replace/rename, tree-sitter syntax validation, ast-grep structural search, persistent project memory, and 27 BMAD orchestration agents for multi-role development workflows (dev, architect, QA, PM, game-dev, creative).",
+  "author": {
+    "name": "Abstract Bike"
+  }
+}

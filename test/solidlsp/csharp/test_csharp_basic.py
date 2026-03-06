@@ -302,7 +302,7 @@ class TestCSharpSolutionProjectOpening:
             # Create CSharpLanguageServer instance
             mock_settings = Mock(spec=SolidLSPSettings)
             mock_settings.ls_resources_dir = "/tmp/test_ls_resources"
-            mock_settings.project_data_relative_path = "project_data"
+            mock_settings.project_data_path = str(temp_path / "project_data")
 
             with SuspendedLoggersContext():
                 logging.getLogger().setLevel(logging.DEBUG)
@@ -330,7 +330,7 @@ class TestCSharpSolutionProjectOpening:
 
             mock_settings = Mock(spec=SolidLSPSettings)
             mock_settings.ls_resources_dir = "/tmp/test_ls_resources"
-            mock_settings.project_data_relative_path = "project_data"
+            mock_settings.project_data_path = str(temp_path / "project_data")
 
             # Create CSharpLanguageServer instance
             with SuspendedLoggersContext():
@@ -339,7 +339,7 @@ class TestCSharpSolutionProjectOpening:
                     CSharpLanguageServer(mock_config, str(temp_path), mock_settings)
 
                     # Verify that logger was called with warning about no solution/project files
-                    expected_log_msg = "No .sln or .csproj file found, language server will attempt auto-discovery"
+                    expected_log_msg = "No .sln/.slnx or .csproj file found, language server will attempt auto-discovery"
                     assert expected_log_msg in mem_log.get_log()
 
     def test_solution_and_project_opening_with_real_test_repo(self):

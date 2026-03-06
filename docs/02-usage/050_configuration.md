@@ -14,7 +14,8 @@ Serena is configured in using a multi-layered approach:
  * **contexts and modes** for composable configuration, which can be enabled on a case-by-case basis (see below)
  * **command-line parameters** passed to the `start-mcp-server` server command (overriding/extending configured settings)  
    See [MCP Server Command-Line Arguments](mcp-args) for further information.  
-   
+
+(global-config)=
 ## Global Configuration
 
 The global configuration file allows you to change general settings and defaults that will apply to all projects unless overridden.
@@ -22,7 +23,8 @@ The global configuration file allows you to change general settings and defaults
 ### Settings
 
 Some of the configurable settings include:
-  * the language backend to use by default (i.e., the JetBrains plugin or language servers)
+  * the language backend to use by default (i.e., the JetBrains plugin or language servers);
+    this can also be [overridden per project](per-project-language-backend)
   * UI settings affecting the [Serena Dashboard and GUI tool](060_dashboard.md)
   * the set of tools to enable/disable by default
   * the set of modes to use by default
@@ -111,7 +113,8 @@ Examples of built-in modes include:
 * `one-shot`: Configures Serena for tasks that should be completed in a single response, often used with `planning` for generating reports or initial plans.
 * `no-onboarding`: Skips the initial onboarding process if it's not needed for a particular session but retains the memory tools (assuming initial memories were created externally).
 * `onboarding`: Focuses on the project onboarding process.
-* `no-memories`: Disables all memory tools (and tools building on memories such as onboarding tools)  
+* `no-memories`: Disables all memory tools (and tools building on memories such as onboarding tools)
+* `query-projects`: Enables tools for querying other Serena projects (without activating them); see section [Reading from External Projects](query-projects) 
 
 Find the concrete definitions of these modes [here](https://github.com/oraios/serena/tree/main/src/serena/resources/config/modes).
 
@@ -170,6 +173,35 @@ For advanced users, Serena's configuration can be further customized.
 The Serena user data directory (where configuration, language server files, logs, etc. are stored) defaults to `~/.serena`.
 You can change this location by setting the `SERENA_HOME` environment variable to your desired path.
 
+### Per-Project Serena Folder Location
+
+By default, each project stores its Serena data (memories, caches, etc.) in a `.serena` folder inside the project root.
+You can customize this location globally via the `project_serena_folder_location` setting in `serena_config.yml`.
+
+The setting supports two placeholders:
+
+| Placeholder          | Description                                     |
+|----------------------|-------------------------------------------------|
+| `$projectDir`        | The absolute path to the project root directory |
+| `$projectFolderName` | The name of the project folder                  |
+
+**Examples:**
+
+```yaml
+# Default: data stored inside the project directory
+project_serena_folder_location: "$projectDir/.serena"
+
+# Central location: all project data under a shared directory
+project_serena_folder_location: "/projects-metadata/$projectFolderName/.serena"
+```
+
+When a project is loaded, Serena uses the following fallback logic:
+1. Check if a `.serena` folder exists at the configured path.
+2. If not, check if one exists in the project root (default/legacy location).
+3. If neither exists, create the folder at the configured path.
+
+This ensures backward compatibility: existing projects that already have a `.serena` folder in the project root will continue to work, even after changing the `project_serena_folder_location` setting.
+
 (ls-specific-settings)=
 ### Language Server-Specific Settings
 
@@ -209,7 +241,7 @@ ls_specific_settings:
 ```
 
 This is supported by all language servers deriving their dependency provider from  `LanguageServerDependencyProviderSinglePath`.
-Currently, this includes the following languages: `bash`, `clojure`, `cpp`, `markdown`, `php`, `php_phpactor`, `python`, `rust`, `toml`, `typescript`, `yaml`. 
+Currently, this includes the following languages: `bash`, `clojure`, `cpp`, `kotlin`, `markdown`, `php`, `php_phpactor`, `python`, `rust`, `toml`, `typescript`, `yaml`.
 We will add support for more languages over time.
 
 #### C# (Roslyn Language Server)
@@ -279,6 +311,46 @@ Notes:
 - `gopls_settings.env` values are strings.
 - `GOFLAGS` (from the environment you start Serena in) may also affect the Go build context. Prefer `buildFlags` for tags.
 - Build context changes are only picked up when `gopls` starts. After changing `gopls_settings` (or relevant env vars like `GOFLAGS`), restart the Serena process (or server) that hosts the Go language server, or use your client's "Restart language server" action if it causes `gopls` to restart.
+
+#### Java (`eclipse.jdt.ls`)
+
+The following settings are supported for the Java language server:
+
+| Setting | Default | Description |
+|---|---|---|
+| `maven_user_settings` | `~/.m2/settings.xml` | Path to Maven `settings.xml` |
+| `gradle_user_home` | `~/.gradle` | Path to Gradle user home directory |
+| `gradle_wrapper_enabled` | `false` | Use the project's Gradle wrapper (`gradlew`) instead of the bundled Gradle distribution. Enable this for projects with custom plugins or repositories. |
+| `gradle_java_home` | `null` | Path to the JDK used by Gradle. When unset, Gradle uses the bundled JRE. |
+| `use_system_java_home` | `false` | Use the system's `JAVA_HOME` environment variable for JDTLS itself. Enable this if your project requires a specific JDK vendor or version for Gradle's JDK checks. |
+
+Example for a project with custom Gradle plugins and JDK requirements:
+
+```yaml
+ls_specific_settings:
+  java:
+    gradle_wrapper_enabled: true
+    use_system_java_home: true
+```
+
+#### Kotlin
+
+Serena uses [JetBrains' Kotlin Language Server](https://github.com/Kotlin/kotlin-lsp) for Kotlin support.
+
+**Runtime Requirements:**
+
+- Java 21 or higher is required. If not found, Serena automatically downloads an appropriate JRE.
+- The Kotlin Language Server is automatically downloaded from JetBrains' CDN.
+
+**Configuration:**
+
+```yaml
+ls_specific_settings:
+  kotlin:
+    ls_path: "/path/to/kotlin-lsp.sh"        # Override the Kotlin Language Server executable
+    kotlin_lsp_version: "261.13587.0"         # Override the Kotlin Language Server version
+    jvm_options: "-Xmx4G -XX:+UseG1GC"       # JVM options (default: -Xmx2G). Set to "" to disable.
+```
 
 #### Pascal (`pasls`)
 

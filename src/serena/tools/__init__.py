@@ -10,3 +10,4 @@ from .jetbrains_tools import *
 from .edit_tools import *
 from .bmad_tools import *
 from .research_tools import *
+from .query_project_tools import *

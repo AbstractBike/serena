@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "serena-vanguard": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/home/digger/git/serena-vanguard",
+        "serena-mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}

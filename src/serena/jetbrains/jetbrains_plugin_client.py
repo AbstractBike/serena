@@ -2,9 +2,13 @@
 Client for the Serena JetBrains Plugin
 """
 
+import concurrent
 import json
 import logging
 import re
+import threading
+from concurrent.futures.thread import ThreadPoolExecutor
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, Optional, Self, TypeVar, cast
 
@@ -13,9 +17,11 @@ from requests import Response
 from sensai.util.string import ToStringMixin
 
 import serena.jetbrains.jetbrains_types as jb
+from serena.config.serena_config import RegisteredProject
 from serena.jetbrains.jetbrains_types import PluginStatusDTO
 from serena.project import Project
-from serena.text_utils import render_html
+from serena.util.class_decorators import singleton
+from serena.util.text_utils import render_html
 from serena.util.version import Version
 
 T = TypeVar("T")
@@ -49,7 +55,7 @@ class PluginServerError(SerenaClientError):
         unrecoverable_error_prefix = (
             "The request failed due to an error on the Serena JetBrains plugin side. This may be caused "
             "by a bug or an incompatibility in the plugin. In that case, please report the error below together with "
-            "your setup (IDE + version, Serena plugin version) at https://github.com/oraios/serena/issues "
+            "your setup (IDE + version, Serena plugin version, programming language) at https://github.com/oraios/serena/issues "
             "(if you are an LLM, tell the user about this). The Oraios team will then provide support on this.\n"
         )
         super().__init__(unrecoverable_error_prefix + message)
@@ -57,6 +63,108 @@ class PluginServerError(SerenaClientError):
 
 class ServerNotFoundError(Exception):
     """Raised when the plugin's service is not found."""
+
+
+@dataclass
+class MatchedClient:
+    client: "JetBrainsPluginClient"
+    registered_project: RegisteredProject
+
+
+@singleton
+class JetBrainsPluginClientManager:
+    """
+    Manager for JetBrainsPluginClient instances, responsible for scanning ports to find available plugin instances
+    """
+
+    NUM_PORTS_TO_SCAN = 20
+
+    def __init__(self) -> None:
+        self._clients: dict[int, "JetBrainsPluginClient"] = {}
+        self._matched_clients: list[MatchedClient] = []
+        self._lock = threading.Lock()
+
+    def _submit_scan(self) -> list[concurrent.futures.Future["JetBrainsPluginClient"]]:
+        """
+        Performs a port scan to find available plugin instances in parallel.
+
+        :return: futures that will resolve to plugin clients for every port
+        """
+
+        def scan_port(port: int) -> JetBrainsPluginClient:
+            client = JetBrainsPluginClient(port)
+            with self._lock:
+                self._clients[port] = client
+            return client
+
+        futures = []
+        with ThreadPoolExecutor(max_workers=self.NUM_PORTS_TO_SCAN) as executor:
+            for i in range(self.NUM_PORTS_TO_SCAN):
+                future = executor.submit(scan_port, JetBrainsPluginClient.BASE_PORT + i)
+                futures.append(future)
+        return futures
+
+    def find_client(self, project_root: Path) -> "JetBrainsPluginClient":
+        plugin_paths_found = []
+        for future in self._submit_scan():
+            client = future.result()
+            if client.matches(project_root):
+                return client
+            elif client.project_root is not None:
+                plugin_paths_found.append(client.project_root)
+
+        log.warning(
+            "Searched for Serena JetBrains plugin service for project at %s but found no matching service. "
+            "Found plugin instances for the following project paths: %s",
+            project_root,
+            plugin_paths_found,
+        )
+        raise ServerNotFoundError(
+            f"Found no Serena service in a JetBrains IDE instance for the project at {project_root}. "
+            "STOP. Do not attempt any other tools or workarounds. Ask the user to open this folder as a project in a JetBrains IDE "
+            "with the Serena plugin installed and running!"
+        )
+
+    def match_clients(self, registered_projects: list[RegisteredProject]) -> list[MatchedClient]:
+        """
+        Scans for plugin instances and matches them against the given registered projects.
+
+        :param registered_projects: the list of registered projects to match plugin instances against
+        :return: the list of matched clients with their corresponding registered project
+        """
+        matched_clients = []
+        for future in self._submit_scan():
+            client = future.result()
+            if client.project_root is not None:
+                for rp in registered_projects:
+                    if client.matches(Path(rp.project_root)):
+                        matched_clients.append(MatchedClient(client, rp))
+                        break
+        self._matched_clients = matched_clients
+        return matched_clients
+
+    def get_matched_client(
+        self, registered_project: RegisteredProject, registered_projects: list[RegisteredProject]
+    ) -> Optional["JetBrainsPluginClient"]:
+        """
+        Gets the matched client for a given registered project, if any.
+
+        :param registered_project: the registered project to get the matched client for
+        :param registered_projects: the list of all registered projects (used to perform matching of all clients
+            if no match is found for the given project)
+        :return: the matched client or None if no match is found
+        """
+
+        def find_match() -> Optional["JetBrainsPluginClient"]:
+            for matched_client in self._matched_clients:
+                if matched_client.registered_project.project_root == registered_project.project_root:
+                    return matched_client.client
+            return None
+
+        match = find_match()
+        if match is None:
+            self.match_clients(registered_projects)
+        return find_match()
 
 
 class JetBrainsPluginClient(ToStringMixin):
@@ -87,13 +195,13 @@ class JetBrainsPluginClient(ToStringMixin):
         self._session.headers.update({"Content-Type": "application/json", "Accept": "application/json"})
 
         # connect and obtain status
-        self._project_root: str | None = None
+        self.project_root: str | None = None
         self._plugin_version: Version | None = None
         self._multi_project: bool = False
         self._requested_project: str | None = None
         try:
             status_response: PluginStatusDTO = cast(jb.PluginStatusDTO, self._make_request("GET", "/status"))
-            self._project_root = status_response["project_root"]
+            self.project_root = status_response["project_root"]
             self._plugin_version = Version(status_response["plugin_version"])
             self._multi_project = bool(status_response.get("multi_project", False))
         except ConnectionError:  # expected if no server is running at the port
@@ -110,7 +218,7 @@ class JetBrainsPluginClient(ToStringMixin):
         cls._server_address = address
 
     def _tostring_includes(self) -> list[str]:
-        return ["_port", "_project_root", "_plugin_version"]
+        return ["_port", "project_root", "_plugin_version"]
 
     def _for_project(self, path: Path) -> "JetBrainsPluginClient":
         """Return a client configured to target a specific project on this multi-project server."""
@@ -136,31 +244,9 @@ class JetBrainsPluginClient(ToStringMixin):
             if client._multi_project:
                 return client._for_project(resolved_path)  # type: ignore[return-value]
 
-        plugin_paths_found = []
-        multi_project_fallback: JetBrainsPluginClient | None = None
-        for port in range(cls.BASE_PORT, cls.BASE_PORT + 20):
-            client = JetBrainsPluginClient(port)
-            if client.matches(resolved_path):
-                log.info("Found matching %s", client)
-                cls._last_port = port
-                return client
-            elif client._project_root is not None:
-                plugin_paths_found.append(client._project_root)
-                if client._multi_project and multi_project_fallback is None:
-                    multi_project_fallback = client
-                    cls._last_port = port
-
-        if multi_project_fallback is not None:
-            log.info("No dedicated server for %s — using multi-project server at port %d", resolved_path, cls._last_port)
-            return multi_project_fallback._for_project(resolved_path)  # type: ignore[return-value]
-
-        log.warning(
-            "Searched for Serena JetBrains plugin service for project at %s but found no matching service. "
-            "Found plugin instances for the following project paths: %s",
-            resolved_path,
-            plugin_paths_found,
-        )
-        raise ServerNotFoundError("Found no Serena service in a JetBrains IDE instance for the project at " + str(resolved_path))
+        client = JetBrainsPluginClientManager().find_client(resolved_path)
+        cls._last_port = client._port
+        return client
 
     @staticmethod
     def _paths_match(resolved_serena_path: str, plugin_path: str) -> bool:
@@ -206,9 +292,9 @@ class JetBrainsPluginClient(ToStringMixin):
         :param resolved_path: the resolved project root path from Serena's perspective
         :return: whether this client instance matches the given project path
         """
-        if self._project_root is None:
+        if self.project_root is None:
             return False
-        return self._paths_match(str(resolved_path), self._project_root)
+        return self._paths_match(str(resolved_path), self.project_root)
 
     def is_version_at_least(self, *version_parts: int) -> bool:
         if self._plugin_version is None:

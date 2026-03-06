@@ -55,6 +55,7 @@ class Language(str, Enum):
     LUA = "lua"
     NIX = "nix"
     ERLANG = "erlang"
+    OCAML = "ocaml"
     AL = "al"
     FSHARP = "fsharp"
     REGO = "rego"
@@ -104,6 +105,16 @@ class Language(str, Enum):
     TOML = "toml"
     """TOML language server using Taplo.
     Supports TOML validation, formatting, and schema support.
+    """
+    HLSL = "hlsl"
+    """Shader language server using shader-language-server (antaalt/shader-sense).
+    Supports .hlsl, .hlsli, .fx, .fxh, .cginc, .compute, .shader, .glsl, .vert, .frag, .geom, .tesc, .tese, .comp, .wgsl files.
+    Automatically downloads shader-language-server binary.
+    """
+    SYSTEMVERILOG = "systemverilog"
+    """SystemVerilog language server using verible-verilog-ls.
+    Supports .sv, .svh, .v, .vh files.
+    Automatically downloads verible binary.
     """
 
     @classmethod
@@ -213,6 +224,8 @@ class Language(str, Enum):
                 return FilenameMatcher("*.nix")
             case self.ERLANG:
                 return FilenameMatcher("*.erl", "*.hrl", "*.escript", "*.config", "*.app", "*.app.src")
+            case self.OCAML:
+                return FilenameMatcher("*.ml", "*.mli", "*.re", "*.rei")
             case self.AL:
                 return FilenameMatcher("*.al", "*.dal")
             case self.FSHARP:
@@ -246,6 +259,26 @@ class Language(str, Enum):
                 return FilenameMatcher("*.groovy", "*.gvy")
             case self.MATLAB:
                 return FilenameMatcher("*.m", "*.mlx", "*.mlapp")
+            case self.HLSL:
+                return FilenameMatcher(
+                    "*.hlsl",
+                    "*.hlsli",
+                    "*.fx",
+                    "*.fxh",
+                    "*.cginc",
+                    "*.compute",
+                    "*.shader",
+                    "*.glsl",
+                    "*.vert",
+                    "*.frag",
+                    "*.geom",
+                    "*.tesc",
+                    "*.tese",
+                    "*.comp",
+                    "*.wgsl",
+                )
+            case self.SYSTEMVERILOG:
+                return FilenameMatcher("*.sv", "*.svh", "*.v", "*.vh")
             case _:
                 raise ValueError(f"Unhandled language: {self}")
 
@@ -375,6 +408,10 @@ class Language(str, Enum):
                 from solidlsp.language_servers.erlang_language_server import ErlangLanguageServer
 
                 return ErlangLanguageServer
+            case self.OCAML:
+                from solidlsp.language_servers.ocaml_lsp_server import OcamlLanguageServer
+
+                return OcamlLanguageServer
             case self.AL:
                 from solidlsp.language_servers.al_language_server import ALLanguageServer
 
@@ -427,6 +464,14 @@ class Language(str, Enum):
                 from solidlsp.language_servers.matlab_language_server import MatlabLanguageServer
 
                 return MatlabLanguageServer
+            case self.HLSL:
+                from solidlsp.language_servers.hlsl_language_server import HlslLanguageServer
+
+                return HlslLanguageServer
+            case self.SYSTEMVERILOG:
+                from solidlsp.language_servers.systemverilog_server import SystemVerilogLanguageServer
+
+                return SystemVerilogLanguageServer
             case _:
                 raise ValueError(f"Unhandled language: {self}")
 
