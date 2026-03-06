@@ -255,3 +255,6 @@ cabal.project.local*
 
 zz-misc/
 vue-implementation/
+
+# Worktrees
+.worktrees/
