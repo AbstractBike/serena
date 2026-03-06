@@ -160,11 +160,12 @@ class OmniSharp(SolidLanguageServer):
             DotnetVersion.V7,
             DotnetVersion.V8,
             DotnetVersion.V9,
-        ], f"Only dotnet version 6-9 are supported at the moment but got {dotnet_version=}"
+            DotnetVersion.V10,
+        ], f"Only dotnet version 6-10 are supported at the moment but got {dotnet_version=}"
 
         # TODO: Do away with this assumption
-        # Currently, runtime binaries are not available for .Net 7 and .Net 8. Hence, we assume .Net 6 runtime binaries to be compatible with .Net 7, .Net 8
-        if dotnet_version in [DotnetVersion.V7, DotnetVersion.V8, DotnetVersion.V9]:
+        # Currently, runtime binaries are not available for .Net 7+. Hence, we assume .Net 6 runtime binaries to be compatible.
+        if dotnet_version in [DotnetVersion.V7, DotnetVersion.V8, DotnetVersion.V9, DotnetVersion.V10]:
             dotnet_version = DotnetVersion.V6
 
         runtime_dependencies = d["runtimeDependencies"]

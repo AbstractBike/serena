@@ -291,6 +291,7 @@ class DotnetVersion(str, Enum):
     V7 = "7"
     V8 = "8"
     V9 = "9"
+    V10 = "10"
     VMONO = "mono"
 
 
@@ -388,6 +389,8 @@ class PlatformUtils:
 
             # Check for supported versions in order of preference (latest first)
             for version_cmd_output in available_version_cmd_output:
+                if version_cmd_output.startswith("10"):
+                    return DotnetVersion.V10
                 if version_cmd_output.startswith("9"):
                     return DotnetVersion.V9
                 if version_cmd_output.startswith("8"):
@@ -401,7 +404,7 @@ class PlatformUtils:
 
             # If no supported version found, raise exception with all available versions
             raise SolidLSPException(
-                f"No supported dotnet version found. Available versions: {', '.join(available_version_cmd_output)}. Supported versions: 4, 6, 7, 8"
+                f"No supported dotnet version found. Available versions: {', '.join(available_version_cmd_output)}. Supported versions: 4, 6-10"
             )
         except (FileNotFoundError, subprocess.CalledProcessError):
             try:

@@ -1,4 +1,4 @@
-from serena.backends.treesitter.engine import SymbolBounds, SymbolEngine
+from serena.backends.treesitter.engine import SymbolEngine
 
 
 def test_parse_python_function():
