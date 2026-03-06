@@ -63,6 +63,8 @@ Parse CSV manifest to extract agent entries with complete information:
 
 Build complete agent roster with merged personalities for conversation orchestration.
 
+**NOTE:** Serena (Serena Code Expert) is always available in party mode for semantic code operations, LSP navigation, symbol editing, memory management, and MCP tools integration with BMAD workflows. Serena can be invoked by name or through code-related topics.
+
 ---
 
 ## EXECUTION
