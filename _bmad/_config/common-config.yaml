@@ -1,0 +1,13 @@
+# BMAD Common Configuration
+# Centralized configuration shared across all BMAD modules
+# Version: 1.0.0
+# Date: 2026-03-06
+
+# Core Configuration Values (Shared across all modules)
+user_name: Serena
+communication_language: Spanish
+document_output_language: English
+output_folder: "{project-root}/docs"
+
+# Module-specific overrides can be added in individual module configs
+# This file should be imported by module-specific configs to avoid duplication

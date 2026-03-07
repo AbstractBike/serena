@@ -152,9 +152,8 @@ When user selects approach, append the session overview content directly to `{br
 [2] AI-Recommended Techniques - Get customized suggestions based on your goals
 [3] Random Technique Selection - Discover unexpected creative methods
 [4] Progressive Technique Flow - Start broad, then systematically narrow focus
-[5] Research-First - Investigate your topic with web search before ideating
 
-Which approach appeals to you most? (Enter 1-5)"
+Which approach appeals to you most? (Enter 1-4)"
 
 ### 4. Handle User Selection and Initial Document Append
 
@@ -172,7 +171,6 @@ After user selects approach number:
 - **If 2:** Load `./step-02b-ai-recommended.md`
 - **If 3:** Load `./step-02c-random-selection.md`
 - **If 4:** Load `./step-02d-progressive-flow.md`
-- **If 5:** Load `./step-02e-research-first.md`
 
 ## SUCCESS METRICS:
 

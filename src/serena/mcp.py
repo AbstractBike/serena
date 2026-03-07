@@ -261,8 +261,24 @@ class SerenaMCPFactory:
             log.info(f"Starting MCP server with {len(mcp._tool_manager._tools)} tools: {list(mcp._tool_manager._tools.keys())}")
 
     def _create_serena_agent(self, serena_config: SerenaConfig, modes: ModeSelectionDefinition | None = None) -> SerenaAgent:
+        # Handle modes=None case - use default_modes from config instead
+        effective_modes: ModeSelectionDefinition | None
+        if modes is None:
+            # Use default_modes from serena_config when not explicitly provided
+            if serena_config.default_modes:
+                effective_modes = ModeSelectionDefinition(default_modes=serena_config.default_modes)
+            else:
+                # Fallback to empty sequence if no defaults configured
+                effective_modes = ModeSelectionDefinition(default_modes=())
+        else:
+            effective_modes = modes
+
         return SerenaAgent(
-            project=self.project, serena_config=serena_config, context=self.context, modes=modes, memory_log_handler=self.memory_log_handler
+            project=self.project,
+            serena_config=serena_config,
+            context=self.context,
+            modes=effective_modes,
+            memory_log_handler=self.memory_log_handler,
         )
 
     def _create_default_serena_config(self) -> SerenaConfig:

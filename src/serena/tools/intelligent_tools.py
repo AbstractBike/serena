@@ -1,14 +1,15 @@
-"""JETBrains intelligent tools - standalone smart code operations.
+"""Intelligent code analysis and task planning tools.
 
-These tools operate independently without BMAD context, providing intelligent
-code analysis and suggestions.
+These tools provide context-aware analysis and intelligent suggestions
+for development workflows, independent of IDE or platform.
 """
 
+import logging
 from pathlib import Path
-from typing import Any
 
 from serena.tools.tools_base import Tool, ToolMarkerOptional
-from serena.util.logging import log
+
+log = logging.getLogger(__name__)
 
 
 class AnalyzeTaskTool(Tool, ToolMarkerOptional):
@@ -18,20 +19,20 @@ class AnalyzeTaskTool(Tool, ToolMarkerOptional):
         """
         Analyze the current state and suggest intelligent next steps.
 
-        :param description: Description of what was just done or the current task
+        :param description: Description of what was just done or current task
         :return: Intelligent analysis and suggestions
         """
         project_root = self.get_project_root()
 
         # Check for BMAD workflows availability
-        bmad_available = (project_root / "_bmad").exists()
+        bmad_available = (project_root / Path("_bmad")).exists()
 
         result = f"""Task Analysis: {description}
 
 Context-Aware Assessment:
-1. Project Structure: {'self._scan_codebase() if callable else 'not available'}'}
+1. Project Structure: Codebase scan available
 2. BMAD Available: {'Yes' if bmad_available else 'No'}
-3. Git Status: {'subprocess.check_output(['git', 'status', '--short']).strip()[:100]' if callable else 'not available'}
+3. Git Status: Check available via git commands
 
 Intelligent Suggestions:
 1. Consider using BMAD workflows for:
@@ -46,6 +47,7 @@ Intelligent Suggestions:
 
 3. Next Steps Based on Context:
 """
+
         if bmad_available:
             result += "   - Available BMAD workflows: quick-spec, quick-dev, brainstorming\n"
             result += "   - Consider using /bmad-help for workflow guidance\n"
@@ -53,8 +55,8 @@ Intelligent Suggestions:
             result += "   - BMAD not available in this project\n"
 
         result += "\nFor detailed analysis, use:\n"
-        result += "  /bmad-core-serena    # Access Serena with BMAD capabilities\n"
-        result += "  /bmad-brainstorming   # Or: /bmad-help for brainstorming guidance\n"
+        result += "  - /bmad-core-serena    # Access Serena with BMAD capabilities\n"
+        result += "  - /bmad-brainstorming   # Or: /bmad-help for brainstorming guidance\n"
 
         return result
 
@@ -64,7 +66,7 @@ class SmartSuggestTool(Tool, ToolMarkerOptional):
 
     def apply(self, context: str = "") -> str:
         """
-        Provide intelligent suggestions based on the current context.
+        Provide intelligent suggestions based on current context.
 
         :param context: The current work context or question
         :return: Context-aware suggestions
@@ -87,22 +89,22 @@ For detailed workflow execution, use: /bmad-core-serena with --mode jetbrains
 
     @staticmethod
     def _recommend_based_on_context(context: str) -> str:
-        """Recommend the most appropriate action based on context."""
+        """Recommend most appropriate action based on context."""
         context_lower = context.lower()
 
-        if any(word in context_lower for word in ['feature', 'implement', 'add', 'create', 'spec']):
+        if any(word in context_lower for word in ["feature", "implement", "add", "create", "spec"]):
             return "Use /bmad-core-serena quick-spec to create a technical specification for this feature."
 
-        if any(word in context_lower for word in ['fix', 'bug', 'error', 'debug', 'test']):
+        if any(word in context_lower for word in ["fix", "bug", "error", "debug", "test"]):
             return "Use code analysis tools like smart_code_review to diagnose the issue."
 
-        if any(word in context_lower for word in ['help', 'how', 'what', 'why', 'explain', 'documentation']):
+        if any(word in context_lower for word in ["help", "how", "what", "why", "explain", "documentation"]):
             return "Use explain_concept tool to explain technical concepts in project context."
 
-        if any(word in context_lower for word in ['brainstorm', 'idea', 'design', 'creative', 'prototype']):
+        if any(word in context_lower for word in ["brainstorm", "idea", "design", "creative", "prototype"]):
             return "Use brainstorming tool for creative ideation sessions."
 
-        if any(word in context_lower for word in ['task', 'next', 'continue', 'finish', 'done', 'complete']):
+        if any(word in context_lower for word in ["task", "next", "continue", "finish", "done", "complete"]):
             return "Use task_analyzer tool to get intelligent breakdown of remaining work."
 
         return "I need more context to provide specific recommendations. Try asking: 'What would you like me to analyze?' or specify the feature/work you're focusing on."

@@ -192,6 +192,12 @@ class SharedConfig(ModeSelectionDefinition, ToolInclusionDefinition, ToStringMix
     symbol_info_budget: float | None = None
     language_backend: LanguageBackend | None = None
 
+    # BMAD configuration fields - centralized from _bmad/core/config.yaml
+    user_name: str = "Serena"
+    communication_language: str = "Spanish"
+    document_output_language: str = "English"
+    output_folder: str = "{project-root}/docs"
+
 
 class SerenaConfigError(Exception):
     pass

@@ -1,0 +1,26 @@
+---
+name: 'Quality Gates'
+description: 'Execute comprehensive quality checks before deployment'
+steps:
+  - 'steps/step-01-initialization.md'
+  - 'steps/step-02-code-quality.md'
+  - 'steps/step-03-documentation.md'
+  - 'steps/step-04-security.md'
+  - 'steps/step-05-performance.md'
+  - 'steps/step-06-deployment.md'
+  - 'steps/step-07-generate-report.md'
+---
+
+# Quality Gates Workflow
+
+**Goal:** Orchestrate comprehensive quality checks across codebase, tests, documentation, and deployment readiness before merging changes.
+
+**Purpose:** Ensure production-readiness by validating:
+- Code quality and standards compliance
+- Test coverage and passing tests
+- Documentation completeness
+- Security vulnerabilities
+- Performance benchmarks
+- Deployment readiness
+
+**Execution Model:** Sequential execution with checkpoints and team approval

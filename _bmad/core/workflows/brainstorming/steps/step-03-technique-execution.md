@@ -286,7 +286,6 @@ After final technique element:
 
 [K] **Keep exploring this technique** - We're just getting warmed up!
 [T] **Try a different technique** - Fresh perspective on the same topic
-[R] **Research & validate** - Search the web to validate or challenge current ideas
 [A] **Go deeper on a specific idea** - Develop a promising concept further (Advanced Elicitation)
 [B] **Take a quick break** - Pause and return with fresh energy
 [C] **Move to organization** - Only when you feel we've thoroughly explored
@@ -294,42 +293,6 @@ After final technique element:
 **Default recommendation:** Unless you feel we've generated at least 100+ ideas, I suggest we keep exploring! The best insights often come after the obvious ideas are exhausted.
 
 ### 8. Handle Menu Selection
-
-#### If 'R' (Research & Validate):
-
-**Research Validation Loop:**
-
-"**Let's put our ideas to the test with real-world evidence!**
-
-**Ideas to Validate:**
-[List the top 3-5 most promising ideas generated so far]
-
-**For each idea, I'll:**
-1. Search the web for existing implementations or evidence
-2. Report what I find — supporting evidence, contradictions, or gaps
-3. You decide: strengthen the idea, pivot it, or discard it
-
-**Which idea should we investigate first?** (Or tell me a specific question to research)"
-
-**Execute Research:**
-1. Use `web_search` with queries derived from the selected idea
-2. Optionally `web_scrape` promising results for deeper analysis
-3. Present findings using the IDEA FORMAT TEMPLATE:
-
-**[Research Validation #X]**: [Idea Being Validated]
-_Finding_: [What the research revealed]
-_Impact_: [How this changes/strengthens/challenges the idea]
-_Action_: [Strengthen / Pivot / Discard / Needs More Research]
-
-**After each validation:**
-"**Validation complete for [idea].** Result: [Strengthened/Pivoted/Discarded]
-
-**What's next?**
-- Validate another idea
-- Return to ideation with new insights
-- Research a new question that emerged"
-
-**Stay in Step 3** after research — return to the facilitation loop with enriched context.
 
 #### If 'C' (Move to organization):
 

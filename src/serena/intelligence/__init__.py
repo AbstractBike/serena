@@ -3,7 +3,7 @@
 Provides smart context-aware tool selection and routing for Serena.
 """
 
-from typing import TYPE_CHECKING
+# from typing import TYPE_CHECKING # Not currently used, commented out
 
 
 def get_intelligent_mode(active_modes: list[str] | None) -> str:
@@ -14,56 +14,60 @@ def get_intelligent_mode(active_modes: list[str] | None) -> str:
     :return: Mode name or 'standard'
     """
     if not active_modes:
-        return 'standard'
+        return "standard"
 
     # Check for JETBrains mode presence
     for mode in active_modes:
-        if hasattr(mode, 'name') and getattr(mode, 'name', '').lower() == 'jetbrains':
-            return 'jetbrains'
+        if hasattr(mode, "name") and getattr(mode, "name", "").lower() == "jetbrains":
+            return "jetbrains"
 
-    return 'standard'
+    return "standard"
 
 
-def get_tool_selection(active_modes: list[str] | None, jetbrains_mode: bool = False) -> set[str]:
+def get_tool_selection(active_modes: list[str] | None, jetbrains_mode: bool = False) -> dict[str, set[str]]:
     """
     Determine which tools should be exposed based on mode.
 
     :param active_modes: List of active mode names
     :param jetbrains_mode: Whether JETBrains intelligent mode is active
-    :return: Set of tool names to include/exclude
+    :return: Dictionary with 'excluded' and 'included' tool sets
     """
-    excluded_tools = set()
-    included_tools = set()
+    excluded_tools: set[str] = set()
+    included_tools: set[str] = set()
 
     if jetbrains_mode:
         # In JETBrains mode, exclude standard BMAD agents
-        excluded_tools.update({
-            'invoke_bmad_agent',
-            'list_bmad_agents',
-            'bmad_agent_info',
-        })
+        excluded_tools.update(
+            {
+                "invoke_bmad_agent",
+                "list_bmad_agents",
+                "bmad_agent_info",
+            }
+        )
 
         # Include JETBrains BMAD-integrated tools
-        included_tools.update({
-            'quick_spec',       # JETBrains: quick-spec
-            'quick_dev',        # JETBrains: quick-dev
-            'brainstorming',    # JETBrains: brainstorming
-            'smart_code_review', # JETBrains: intelligent review
-            'task_analyzer',     # JETBrains: task analysis
-            'explain_concept',   # JETBrains: concept explanation
-        })
+        included_tools.update(
+            {
+                "quick_spec",  # JETBrains: quick-spec
+                "quick_dev",  # JETBrains: quick-dev
+                "brainstorming",  # JETBrains: brainstorming
+                "smart_code_review",  # JETBrains: intelligent review
+                "task_analyzer",  # JETBrains: task analysis
+                "explain_concept",  # JETBrains: concept explanation
+            }
+        )
 
     # Always include standard tools (unless explicitly excluded)
-    always_include = set()
+    always_include: set[str] = set()
 
     return {
-        'excluded': excluded_tools,
-        'included': included_tools | always_include,
+        "excluded": excluded_tools,
+        "included": included_tools | always_include,
     }
 
 
 # Export public functions
 __all__ = [
-    get_intelligent_mode,
-    get_tool_selection,
+    "get_intelligent_mode",
+    "get_tool_selection",
 ]

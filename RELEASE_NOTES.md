@@ -1,6 +1,17 @@
-# serena-vanguard v0.0.0
+# serena-vanguard v0.1.0
 
-**Initial release of serena-vanguard: LSP-first fork of Serena with enhanced tooling and BMAD integration.**
+## What's New
+
+### v0.1.0 (2026-03-07) - Ralph Loop Maintenance
+- **BMAD Integration Fixes**: All 9 problems in `_bmad/problem-backlog.md` resolved
+  - CR-BM01, CR-TST03, CR-CONF01, CR-JB02/CR-JB04, CR-QG01, CR-BM02, CR-QG02/CR-QG03, CR-TST01, CR-TST02
+  - Complete BMAD integration architecture documented in `BMAD_INTEGRATION.md`
+- **Configuration Centralization**: `_bmad/_config/common-config.yaml` eliminates DRY violations
+- **Quality Gates Workflow**: Complete 7-step workflow covering code quality, documentation, security, performance, deployment, and reporting
+- **Intelligent Tools Consolidation**: `intelligent_tools.py` combines task analysis and smart suggestions
+- **Test Architecture Analysis**: Corrected understanding that unit tests using tempfiles and different language structures are correct practices
+
+**Maintenance update: BMAD integration fixes, configuration centralization, quality gates workflow, and intelligent tools consolidation.**
 
 ## What's New
 
@@ -46,6 +57,7 @@ uv pip install -e /path/to/serena-vanguard
 - `b4d6fdc4` — README update (LSP-first focus)
 - `22f68151` — Auto-register project on demand
 - `872a6b21` — Version bump to 0.0.0
+- `ralph-loop-1` — Ralph Loop Maintenance v0.1.0
 
 ## Known Limitations
 - Push to upstream unavailable (no permissions on oraios/serena)
